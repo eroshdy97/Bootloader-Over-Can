@@ -1,0 +1,8 @@
+.gitignore
+.launches/
+.settings/
+Debug/
+targetConfigs
+.ccsproject
+.cproject
+.project
