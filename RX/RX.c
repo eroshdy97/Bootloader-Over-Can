@@ -18,6 +18,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/flash.h"
 
+// TODO: put in .h
 #define CAN_MSG_ID_RESET            0x00001000
 #define CAN_MSG_ID_START            0x00001001
 #define CAN_MSG_ID_END              0x00001002
@@ -28,9 +29,10 @@
 #define ADDRESS_BANK_2              0x00020000
 #define ADDRESS_VARS                0x00030000
 
-#define VTABLE_OFFSET               (*((volatile unsigned long *)0xE000ED08))
+#define VTABLE_OFFSET_R              (*((volatile unsigned long *)0xE000ED08))
 #define PROGRAM_TO_RUN              (*((volatile unsigned long *)ADDRESS_VARS))
 
+// can manager and handle global variables and flags find a cleaner method
 volatile uint32_t flashToBank = 0;
 volatile uint32_t dataReceivedLength = 0;
 volatile bool dataFrameReceived = false;
@@ -39,7 +41,7 @@ volatile bool dataStart = false;
 volatile bool canErrorFlag = false;
 volatile bool resetFrame = false;
 
-
+// can manager use a for loop to check status based on # of objects created
 void CANIntHandler(void)
 {
     uint32_t ui32Status;
@@ -84,6 +86,7 @@ void CANIntHandler(void)
     }
 }
 
+// bootloader
 void moveApptoRun(uint32_t* src, uint32_t dst, uint32_t count)
 {
     int i = 0;
@@ -93,11 +96,13 @@ void moveApptoRun(uint32_t* src, uint32_t dst, uint32_t count)
     }
     FlashProgram(src, dst, count);
 }
-
+// think in a better implementation
 uint32_t data[5000];
+
+// bootloader
 void RX(void)
 {
-
+    // use a single object no need for 3 in can manager
     tCANMsgObject canMsgStart;
     tCANMsgObject canMsgEnd;
     tCANMsgObject canMsgData;
@@ -105,6 +110,7 @@ void RX(void)
     uint32_t data32bit;
     uint32_t programToRun = PROGRAM_TO_RUN;
 
+    // put inits in bootloader init
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
@@ -118,6 +124,7 @@ void RX(void)
 
     SysCtlPeripheralEnable(SYSCTL_PERIPH_CAN0);
 
+    // can related functions in can manager
     CANInit(CAN0_BASE);
 
     CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 1000000);
@@ -128,6 +135,8 @@ void RX(void)
 
     CANEnable(CAN0_BASE);
 
+    // create a function that sets the can msgdata parameters in canmanager
+    // make msglen a prameter
     canMsgData.ui32MsgID = CAN_MSG_ID_DATA;
     canMsgData.ui32MsgIDMask = 0xfffff;
     canMsgData.ui32Flags = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_EXTENDED_ID;
@@ -154,14 +163,16 @@ void RX(void)
 
 //    SysCtlDelay(5000 * 16000/3);
 
+    // if no msg arrived run the application (timeout principle) make it a function to timeout at certain timing
     uint32_t timeOutCounter = 3180;
     while(!dataStart && (timeOutCounter > 0))
         timeOutCounter--;
 
+    // bootloader make function which app to flash
     if(programToRun == 1 && !dataStart) /* if the bootloader runs and the last app flashed is in bank1 */
     {
         CANMessageGet(CAN0_BASE, 3, &canMsgStart, 0);
-        VTABLE_OFFSET |= ADDRESS_BANK_1;
+        VTABLE_OFFSET_R |= ADDRESS_BANK_1;
 
         __asm(" mov r0, #0x00010000\n");
         __asm(" ldr r1, [r0, #4]");
@@ -170,7 +181,7 @@ void RX(void)
     else if(programToRun == 2 && !dataStart) /* if the bootloader runs and the last app flashed is in bank2 */
     {
         CANMessageGet(CAN0_BASE, 3, &canMsgStart, 0);
-        VTABLE_OFFSET |= ADDRESS_BANK_2;
+        VTABLE_OFFSET_R |= ADDRESS_BANK_2;
 
         __asm(" mov r0, #0x00020000\n");
         __asm(" ldr r1, [r0, #4]");
@@ -179,6 +190,7 @@ void RX(void)
     else /* if the bootloader runs and there is no apps in bank1 or bank2 or there is data incoming*/
     {
         canMsgStart.pui8MsgData = (uint8_t *)&flashToBank;
+        //poll start
         while(!dataStart);
         CANMessageGet(CAN0_BASE, 3, &canMsgStart, 0);
         GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, GPIO_PIN_3);
@@ -194,6 +206,8 @@ void RX(void)
         }
         GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, 0);
 
+        // address of can handler in bootloader
+        // change it to adress of can handler in app
         data[55] = &CANIntHandler;
 
         switch (flashToBank)
@@ -208,7 +222,7 @@ void RX(void)
                 FlashErase(ADDRESS_VARS);
                 FlashProgram(&programToRun, ADDRESS_VARS, sizeof(programToRun));
 
-                VTABLE_OFFSET |= ADDRESS_BANK_2;
+                VTABLE_OFFSET_R |= ADDRESS_BANK_2;
 
                 __asm(" mov r0, #0x00020000\n");
                 __asm(" ldr r1, [r0, #4]");
@@ -226,7 +240,7 @@ void RX(void)
                 FlashErase(ADDRESS_VARS);
                 FlashProgram(&programToRun, ADDRESS_VARS, sizeof(programToRun));
 
-                VTABLE_OFFSET |= ADDRESS_BANK_1;
+                VTABLE_OFFSET_R |= ADDRESS_BANK_1;
 
                 __asm(" mov r0, #0x00010000\n");
                 __asm(" ldr r1, [r0, #4]");

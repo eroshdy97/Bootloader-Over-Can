@@ -16,6 +16,7 @@
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 
+//config.h
 #define CAN_MSG_ID_RESET            0x00001000
 #define CAN_MSG_ID_START            0x00001001
 #define CAN_MSG_ID_END              0x00001002
@@ -24,19 +25,23 @@
 #define FLASH_ON_BANK_1             1
 #define FLASH_ON_BANK_2             2
 
+// private.h
 #define VTABLE_OFFSET               (*((volatile unsigned long *)0xE000ED08))
 
+// reduce flags as possible
 volatile uint32_t g_ui32MsgCountTX = 0;
 volatile bool g_bErrFlagTX = false;
 volatile bool start = false;
 volatile bool end = false;
 volatile bool reset = false;
 
+// can manger
 void SimpleDelay(void)
 {
     SysCtlDelay(200 * 16 / 3);
 }
 
+//can manager
 void CANIntHandler(void)
 {
     uint32_t ui32Status;
@@ -79,6 +84,7 @@ void CANIntHandler(void)
 
 void TX(void)
 {
+    //can manger single object
     tCANMsgObject sCANMessageStart;
     tCANMsgObject sCANMessageEnd;
     tCANMsgObject sCANMessage;
