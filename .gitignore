@@ -9,3 +9,6 @@ targetConfigs
 *.d
 *.mk
 *.obj
+*.out
+*.opt
+*.prefs

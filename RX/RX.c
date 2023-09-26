@@ -24,13 +24,13 @@
 #define CAN_MSG_ID_END              0x00001002
 #define CAN_MSG_ID_DATA             0x00001003
 
-#define ADDRESS_BOOTLOADER_1        0x00000000
+//done
 #define ADDRESS_BANK_1              0x00010000
 #define ADDRESS_BANK_2              0x00020000
-#define ADDRESS_VARS                0x00030000
-
+#define ADDRESS_FLAG                0x00030000
+//done
 #define VTABLE_OFFSET_R              (*((volatile unsigned long *)0xE000ED08))
-#define PROGRAM_TO_RUN              (*((volatile unsigned long *)ADDRESS_VARS))
+#define PROGRAM_TO_RUN              (*((volatile unsigned long *)ADDRESS_FLAG))
 
 // can manager and handle global variables and flags find a cleaner method
 volatile uint32_t flashToBank = 0;
@@ -220,8 +220,8 @@ void RX(void)
                 dataReceivedLength = 0;
 
                 programToRun = 2;
-                FlashErase(ADDRESS_VARS);
-                FlashProgram(&programToRun, ADDRESS_VARS, sizeof(programToRun));
+                FlashErase(ADDRESS_FLAG);
+                FlashProgram(&programToRun, ADDRESS_FLAG, sizeof(programToRun));
 
                 VTABLE_OFFSET_R |= ADDRESS_BANK_2;
 
@@ -233,13 +233,12 @@ void RX(void)
             }
             case 1:
             {
-//                shiftVTable(data, ADDRESS_BANK_1);
                 moveApptoRun(data, ADDRESS_BANK_1, dataReceivedLength * 4);
                 dataReceivedLength = 0;
 
                 programToRun = 1;
-                FlashErase(ADDRESS_VARS);
-                FlashProgram(&programToRun, ADDRESS_VARS, sizeof(programToRun));
+                FlashErase(ADDRESS_FLAG);
+                FlashProgram(&programToRun, ADDRESS_FLAG, sizeof(programToRun));
 
                 VTABLE_OFFSET_R |= ADDRESS_BANK_1;
 
