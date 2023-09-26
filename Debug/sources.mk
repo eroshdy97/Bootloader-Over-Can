@@ -112,6 +112,10 @@ PDE_DEPS__QUOTED :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 . \
+APP/Bootloader \
+APP/Sender \
+HAL/CANMANGER \
+HAL/LEDS \
 RX \
 TX \
 test \
