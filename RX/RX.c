@@ -107,6 +107,7 @@ void RX(void)
     tCANMsgObject canMsgEnd;
     tCANMsgObject canMsgData;
     tCANMsgObject canMsgReset;
+
     uint32_t data32bit;
     uint32_t programToRun = PROGRAM_TO_RUN;
 
