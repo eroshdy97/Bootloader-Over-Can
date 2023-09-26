@@ -6,4 +6,7 @@
 #ifndef _SENDER_INTERFACE_H
 #define _SENDER_INTERFACE_H
 
+void SENDER_Init(void);
+void SENDER_Start(void);
+
 #endif

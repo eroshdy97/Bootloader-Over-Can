@@ -7,19 +7,27 @@
 #ifndef _BOOTLOADER_PRIVATE_H
 #define _BOOTLOADER_PRIVATE_H
 
-/*defines*/
-// Define the mv_INST macro to stringify the Address macro
+#define VTABLE_OFFSET_R                 (*((volatile unsigned long *)0xE000ED08))
+#define PROGRAM_TO_RUN_R                (*((volatile unsigned long *)BOOTLOADER_ADDRESS_FLAG))
+
 #define STRINGIFY(x) #x
-#define ASM_MOVE_2RO(X)    " mov r0, #" STRINGIFY(X) "\n"
+#define ASM_MOVE_2RO(X)                 " mov r0, #" STRINGIFY(X) "\n"
 
-/*Registers*/
-#define VTABLE_OFFSET_R              (*((volatile unsigned long *)0xE000ED08))
-#define PROGRAM_TO_RUN              (*((volatile unsigned long *)ADDRESS_FLAG))
+typedef enum
+{
+    BLStateIdle,
+    BLStateReceivingData,
+    BLStateDone,
 
+} BLStates;
 
-/*Function Prototypes*/
-/*Write recieved APP IN Flash*/
-static void WriteApp2Flash(uint32_t* src, uint32_t dst, uint32_t count);
-static void Jmp2App(uint32_t Address2jmp);
+static BLStates geCurruntState = BLStateIdle;
+static bool gbDataFrameReceived = false;
+static uint32_t gu32FlashToBank = 0;
+static uint32_t gu32DataReceivedLength = 0;
+static uint32_t gu32DataReceived[5000];
+
+static void WriteAppToFlash(uint32_t* src, uint32_t dst, uint32_t count);
+static void Jmp2App(uint32_t u32Address2jmp);
 #endif
 

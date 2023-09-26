@@ -6,11 +6,7 @@
 #ifndef _BOOTLOADER_INTERFACE_H
 #define _BOOTLOADER_INTERFACE_H
 
-
-
-/*Function prototypes*/
-
-
-
+void BOOTLOADER_Init(void);
+void BOOTLOADER_Start(void);
 
 #endif
