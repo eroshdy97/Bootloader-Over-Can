@@ -18,7 +18,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/flash.h"
 
-// TODO: put in .h
+// done
 #define CAN_MSG_ID_RESET            0x00001000
 #define CAN_MSG_ID_START            0x00001001
 #define CAN_MSG_ID_END              0x00001002
@@ -114,6 +114,7 @@ void RX(void)
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+    //leds
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
     GPIOPinConfigure(GPIO_PB4_CAN0RX);
