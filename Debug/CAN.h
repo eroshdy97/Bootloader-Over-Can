@@ -1,2 +1,2 @@
-const uint8_t CAN_image_0[16136];
+const uint8_t CAN_image_0[4832];
 
