@@ -17,9 +17,9 @@
 #include "HAL/CANMANAGER/CANMANAGER_interface.h"
 #include "HAL/LEDS/LEDS_interface.h"
 
-#include "./APP/BOOTLOADER/BOOTLOADER_interface.h"
-#include "./APP/BOOTLOADER/BOOTLOADER_private.h"
 #include "./APP/BOOTLOADER/BOOTLOADER_config.h"
+#include "./APP/BOOTLOADER/BOOTLOADER_private.h"
+#include "./APP/BOOTLOADER/BOOTLOADER_interface.h"
 
 static void WriteAppToFlash(uint32_t* pu32Src, uint32_t u32DstAddr, uint32_t u32Count)
 {
@@ -97,6 +97,7 @@ void BOOTLOADER_Init(void)
 
 void BOOTLOADER_Start(void)
 {
+    LEDS_ON(RED_LED| BLUE_LED| GREEN_LED);
 
     uint32_t u32CanFrameData;
     uint32_t u32ProgramToRun = PROGRAM_TO_RUN_R;
@@ -121,7 +122,9 @@ void BOOTLOADER_Start(void)
     else
     {
         while(geCurruntState != BLStateReceivingData);
+        LEDS_OFF(RED_LED| BLUE_LED| GREEN_LED);
         CANMANAGER_ObjReceiveGet(&gu32FlashToBank, BOOTLOADER_CAN_CONTROLLER_ID_START);
+        LEDS_ON(BLUE_LED);
 
         while(geCurruntState == BLStateReceivingData)
         {
@@ -132,6 +135,8 @@ void BOOTLOADER_Start(void)
                 gbDataFrameReceived = false;
             }
         }
+        LEDS_OFF(BLUE_LED);
+        LEDS_ON(RED_LED);
         switch (gu32FlashToBank)
         {
             case 1:
@@ -141,6 +146,8 @@ void BOOTLOADER_Start(void)
 
                 SetAppFlagToRun(1);
 
+                LEDS_OFF(RED_LED);
+                LEDS_ON(GREEN_LED);
                 JumpToApp(BOOTLOADER_ADDRESS_BANK_1);
                 break;
             }
@@ -151,6 +158,8 @@ void BOOTLOADER_Start(void)
 
                 SetAppFlagToRun(2);
 
+                LEDS_OFF(RED_LED);
+                LEDS_ON(GREEN_LED);
                 JumpToApp(BOOTLOADER_ADDRESS_BANK_2);
                 break;
             }

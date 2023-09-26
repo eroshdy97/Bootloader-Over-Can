@@ -5,25 +5,24 @@
 */
 
 /*Tivaware library includes*/
-#include <stdbool.h>
-#include <stdint.h>
+#include "stdbool.h"
+#include "stdint.h"
+
 #include "inc/hw_can.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 
+#include "driverlib/gpio.h"
 #include "driverlib/can.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 
 /*CAN Manager includes*/
-#include "./HAL/CANMANAGER/CANMANAGER_interface.h"
-#include "./HAL/CANMANAGER/CANMANAGER_private.h"
 #include "./HAL/CANMANAGER/CANMANAGER_config.h"
-
-
-
+#include "./HAL/CANMANAGER/CANMANAGER_private.h"
+#include "./HAL/CANMANAGER/CANMANAGER_interface.h"
 
 void CANMANAGER_Delay_us(uint32_t us)
 {   /*110 -200 us are enough*/
@@ -39,7 +38,7 @@ void CANMANAGER_IntHandler(void)
     if(gui32Status == CAN_INT_INTID_STATUS)
     {
         gui32Status = CANStatusGet(CAN0_BASE, CAN_STS_CONTROL);
-        gbErrFlag =true;
+        g_bErrFlag =true;
 
     }
     /*Useful Message Id received */
@@ -48,7 +47,7 @@ void CANMANAGER_IntHandler(void)
         CANIntClear(CAN0_BASE, gui32Status);
         /* Call the associated function with the message ID sent */
         gpnfs[gui32Status]();
-        gbErrFlag =false;
+        g_bErrFlag =false;
     }
 }
 
@@ -95,8 +94,10 @@ bool CANMANAGER_Transmit(uint32_t ui32MsgID, uint8_t ui8MsgLength, uint32_t * pu
     gCANMsgTobj.pui8MsgData = (uint8_t *)pui32Data;
 
     /*set the message and start sending*/
+    gpnfs[ui8CANControllerId] = pFn;
+
     CANMessageSet(CAN0_BASE, ui8CANControllerId, &gCANMsgTobj, MSG_OBJ_TYPE_TX);
-    CANMANAGER_Delay(200);
+    CANMANAGER_Delay_us(200);
     if(g_bErrFlag)
     {
     /* Reset error flag for next time */
@@ -106,7 +107,7 @@ bool CANMANAGER_Transmit(uint32_t ui32MsgID, uint8_t ui8MsgLength, uint32_t * pu
     else if (gui32Status==ui8CANControllerId)
     {
      /* Call the associated function with the message ID sent */
-     pFn();
+//     pFn();
      gui32Status =0 ;
      return true;
     }
@@ -118,18 +119,18 @@ bool CANMANAGER_Transmit(uint32_t ui32MsgID, uint8_t ui8MsgLength, uint32_t * pu
 }
 
 
-void CANMANAGER_ObjReceiveSet(uint32_t u32MsgID, uint8_t u8MsgLength, uint32_t * pu32Data,uint32_t , uint8_t u8CANControllerId,void(*pFn)(void))
+void CANMANAGER_ObjReceiveSet(uint32_t u32MsgID, uint8_t u8MsgLength, uint32_t * pu32Data, uint8_t u8CANControllerId,void(*pFn)(void))
 {
 
     /*Fill the needed parameters for the can object*/
-    gCANMsgRobj.ui32MsgID = ui32MsgID;
+    gCANMsgRobj.ui32MsgID = u32MsgID;
     gCANMsgRobj.ui32MsgIDMask = 0xfffff;
     gCANMsgRobj.ui32Flags =  MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_EXTENDED_ID;
-    gCANMsgRobj.ui32MsgLen = ui8MsgLength;
-    gCANMsgRobj.pui8MsgData = (uint8_t *)pui32Data;
+    gCANMsgRobj.ui32MsgLen = u8MsgLength;
+    gCANMsgRobj.pui8MsgData = (uint8_t *)pu32Data;
 
     /*set the message to the specified object*/
-    CANMessageSet(CAN0_BASE, ui8CANControllerId, &gCANMsgRobj, MSG_OBJ_TYPE_RX);
+    CANMessageSet(CAN0_BASE, u8CANControllerId, &gCANMsgRobj, MSG_OBJ_TYPE_RX);
     /*set callback*/
     gpnfs[u8CANControllerId] = pFn;
 
@@ -138,7 +139,7 @@ void CANMANAGER_ObjReceiveSet(uint32_t u32MsgID, uint8_t u8MsgLength, uint32_t *
 bool CANMANAGER_ObjReceiveGet(uint32_t * pu32Data, uint8_t u8CANControllerId)
 {
     /*Receive the data at the desired variable */
-    gCANMsgRobj.pui8MsgData = (uint8_t *)pui32Data;
+    gCANMsgRobj.pui8MsgData = (uint8_t *)pu32Data;
     /*Receive the message at the object set*/
     if(g_bErrFlag)
     {
@@ -146,7 +147,7 @@ bool CANMANAGER_ObjReceiveGet(uint32_t * pu32Data, uint8_t u8CANControllerId)
     g_bErrFlag =false;
     return false;
     }
-    else if (gui32Status==ui8CANControllerId)
+    else if (gui32Status==u8CANControllerId)
     {
      CANMessageGet(CAN0_BASE, u8CANControllerId, &gCANMsgRobj, 0);
      gui32Status=0;

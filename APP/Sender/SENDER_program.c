@@ -50,14 +50,23 @@ void SENDER_Init(void)
 }
 void SENDER_Start(void)
 {
+    LEDS_ON(RED_LED| BLUE_LED| GREEN_LED);
+
     uint32_t u32MsgData;
 
     CANMANAGER_Transmit(SENDER_CAN_MSG_ID_RESET, SENDER_CAN_MSG_LENGTH_RESET, &u32MsgData, SENDER_CAN_CONTROLLER_ID_RESET, ResetCallBack);
     while(geCurruntState == SenderStateIdle);
 
+    LEDS_OFF(RED_LED| BLUE_LED| GREEN_LED);
+    LEDS_ON(GREEN_LED);
+    SysCtlDelay(1000 * 16000 / 3);
     u32MsgData = SENDER_FLASH_TO_BANK_1;                                        /* change this */
     CANMANAGER_Transmit(SENDER_CAN_MSG_ID_START, SENDER_CAN_MSG_LENGTH_START, &u32MsgData, SENDER_CAN_CONTROLLER_ID_START, StartCallBack);
     while(geCurruntState == SenderStateSendStart);
+
+    LEDS_OFF(RED_LED| BLUE_LED| GREEN_LED);
+    LEDS_ON(BLUE_LED);
+
 
     while(gu32MsgCount < size_app_1)                                            /* change this */
     {
@@ -66,9 +75,13 @@ void SENDER_Start(void)
 //        while(!gbDataFrameSent);
         gbDataFrameSent = false;
     }
+    LEDS_OFF(BLUE_LED);
+    LEDS_ON(RED_LED);
 
     CANMANAGER_Transmit(SENDER_CAN_MSG_ID_END  , SENDER_CAN_MSG_LENGTH_END  , &u32MsgData, SENDER_CAN_CONTROLLER_ID_END  , EndCallBack);
     while(geCurruntState == SenderStateSendData);
+    LEDS_OFF(RED_LED);
+    LEDS_ON(GREEN_LED);
 
     while(1);
 

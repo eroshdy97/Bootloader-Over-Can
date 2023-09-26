@@ -9,7 +9,7 @@
 
 int main()
 {
-    SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+//    SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
 //#if isTX
 //    TX();
@@ -18,8 +18,9 @@ int main()
 //#endif
 //    test();
 
-    BOOTLOADER_Init();
-    BOOTLOADER_Start();
+//    BOOTLOADER_Init();
+//    BOOTLOADER_Start();
+
 
     SENDER_Init();
     SENDER_Start();

@@ -7,9 +7,9 @@
 #define _LEDS_INTERFACE_H
 
 /*Defines*/
-#define RED_LED GPIO_PIN_1
-#define BLUE_LED GPIO_PIN_2
-#define GREEN_LED GPIO_PIN_3
+#define RED_LED             0x00000002
+#define BLUE_LED            0x00000004
+#define GREEN_LED           0x00000008
 
 /*Function Prototypes*/
 void LEDS_Init(void);
