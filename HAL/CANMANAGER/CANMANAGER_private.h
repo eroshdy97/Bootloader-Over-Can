@@ -1,15 +1,11 @@
-/*
- * Author:      Ehab Roshdy                                                                      
- * Version:     0.1                                                                       
- * Date:        25/9/2023                                                                             
- * Description: CANMANAGER driver private file                                       
+
+/*Author:      Mohamed Gamal                                                                      
+  Version:     V01                                                                       
+  Date:        25/09/2023                                                                             
+  Description: CANMANGER driver private file                                       
 */
+#ifndef _CANMANGER_PRIVATE_H
+#define _CANMANGER_PRIVATE_H
 
-#pragma once
-
-////////////////////////////           MACROS           //////////////////////////////////////
-
-////////////////////////////          VARIABLES         //////////////////////////////////////
-
-////////////////////////////          FUNCTIONS         //////////////////////////////////////
+#endif
 
