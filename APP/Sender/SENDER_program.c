@@ -61,8 +61,10 @@ void SENDER_Start(void)
 
     while(gu32MsgCount < size_app_1)                                            /* change this */
     {
-        u32MsgData = CANProjectToFlash1_image_0[u32MsgCount];                   /* change this */
+        u32MsgData = CANProjectToFlash1_image_0[gu32MsgCount];                   /* change this */
         CANMANAGER_Transmit(SENDER_CAN_MSG_ID_DATA , SENDER_CAN_MSG_LENGTH_DATA , &u32MsgData, SENDER_CAN_CONTROLLER_ID_DATA , DataCallBack);
+//        while(!gbDataFrameSent);
+        gbDataFrameSent = false;
     }
 
     CANMANAGER_Transmit(SENDER_CAN_MSG_ID_END  , SENDER_CAN_MSG_LENGTH_END  , &u32MsgData, SENDER_CAN_CONTROLLER_ID_END  , EndCallBack);

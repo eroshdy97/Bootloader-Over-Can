@@ -23,6 +23,6 @@ typedef enum
 
 static SenderStates geCurruntState = SenderStateIdle;
 static uint32_t gu32MsgCount = 0;
-
+static bool gbDataFrameSent = false;
 #endif
 
