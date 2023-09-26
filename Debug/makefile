@@ -12,6 +12,10 @@ GEN_CMDS__FLAG :=
 ORDERED_OBJS += \
 "./main.obj" \
 "./tm4c123gh6pm_startup_ccs.obj" \
+"./APP/Bootloader/BOOTLOADER_program.obj" \
+"./APP/Sender/SENDER_program.obj" \
+"./HAL/CANMANGER/CANMANGER_program.obj" \
+"./HAL/LEDS/LEDS_program.obj" \
 "./RX/RX.obj" \
 "./TX/TX.obj" \
 "./test/test.obj" \
@@ -28,10 +32,18 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
+-include APP/Bootloader/subdir_vars.mk
+-include APP/Sender/subdir_vars.mk
+-include HAL/CANMANGER/subdir_vars.mk
+-include HAL/LEDS/subdir_vars.mk
 -include RX/subdir_vars.mk
 -include TX/subdir_vars.mk
 -include test/subdir_vars.mk
 -include subdir_rules.mk
+-include APP/Bootloader/subdir_rules.mk
+-include APP/Sender/subdir_rules.mk
+-include HAL/CANMANGER/subdir_rules.mk
+-include HAL/LEDS/subdir_rules.mk
 -include RX/subdir_rules.mk
 -include TX/subdir_rules.mk
 -include test/subdir_rules.mk
@@ -165,8 +177,8 @@ CAN.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" "RX\RX.obj" "TX\TX.obj" "test\test.obj" 
-	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs.d" "RX\RX.d" "TX\TX.d" "test\test.d" 
+	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" "APP\Bootloader\BOOTLOADER_program.obj" "APP\Sender\SENDER_program.obj" "HAL\CANMANGER\CANMANGER_program.obj" "HAL\LEDS\LEDS_program.obj" "RX\RX.obj" "TX\TX.obj" "test\test.obj" 
+	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs.d" "APP\Bootloader\BOOTLOADER_program.d" "APP\Sender\SENDER_program.d" "HAL\CANMANGER\CANMANGER_program.d" "HAL\LEDS\LEDS_program.d" "RX\RX.d" "TX\TX.d" "test\test.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

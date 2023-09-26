@@ -1,9 +1,9 @@
 # FIXED
 
 RX/RX.obj: ../RX/RX.c
-RX/RX.obj: E:/Embedded\ Course/EME\ content/CC_WorkSpace/CAN/def.h
+RX/RX.obj: E:/EUI\ workspace/workspace_new/CAN/def.h
 
 ../RX/RX.c:
 
-E:/Embedded\ Course/EME\ content/CC_WorkSpace/CAN/def.h:
+E:/EUI\ workspace/workspace_new/CAN/def.h:
 

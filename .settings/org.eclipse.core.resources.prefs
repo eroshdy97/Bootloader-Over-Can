@@ -1,4 +1,12 @@
 eclipse.preferences.version=1
+encoding//Debug/APP/Bootloader/subdir_rules.mk=UTF-8
+encoding//Debug/APP/Bootloader/subdir_vars.mk=UTF-8
+encoding//Debug/APP/Sender/subdir_rules.mk=UTF-8
+encoding//Debug/APP/Sender/subdir_vars.mk=UTF-8
+encoding//Debug/HAL/CANMANGER/subdir_rules.mk=UTF-8
+encoding//Debug/HAL/CANMANGER/subdir_vars.mk=UTF-8
+encoding//Debug/HAL/LEDS/subdir_rules.mk=UTF-8
+encoding//Debug/HAL/LEDS/subdir_vars.mk=UTF-8
 encoding//Debug/RX/subdir_rules.mk=UTF-8
 encoding//Debug/RX/subdir_vars.mk=UTF-8
 encoding//Debug/TX/subdir_rules.mk=UTF-8
