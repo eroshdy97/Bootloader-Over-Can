@@ -1,5 +1,6 @@
 "./main.obj"
 "./tm4c123gh6pm_startup_ccs.obj"
+"./HAL/CANMANAGER/CANMANAGER_program.obj"
 "./RX/RX.obj"
 "./TX/TX.obj"
 "./test/test.obj"

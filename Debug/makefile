@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS
+CG_TOOL_ROOT := C:/ti/ccs1240/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
@@ -12,6 +12,7 @@ GEN_CMDS__FLAG :=
 ORDERED_OBJS += \
 "./main.obj" \
 "./tm4c123gh6pm_startup_ccs.obj" \
+"./HAL/CANMANAGER/CANMANAGER_program.obj" \
 "./RX/RX.obj" \
 "./TX/TX.obj" \
 "./test/test.obj" \
@@ -28,10 +29,12 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
+-include HAL/CANMANAGER/subdir_vars.mk
 -include RX/subdir_vars.mk
 -include TX/subdir_vars.mk
 -include test/subdir_vars.mk
 -include subdir_rules.mk
+-include HAL/CANMANAGER/subdir_rules.mk
 -include RX/subdir_rules.mk
 -include TX/subdir_rules.mk
 -include test/subdir_rules.mk
@@ -151,22 +154,22 @@ all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 CAN.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: "$@"'
 	@echo 'Invoking: Arm Linker'
-	"C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --define=ccs="ccs" --define=TARGET_IS_TM4C123_RB1 --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi -z -m"CAN.map" --heap_size=0 --stack_size=512 -i"C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/lib" -i"C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="CAN_linkInfo.xml" --rom_model -o "CAN.out" $(ORDERED_OBJS)
+	"C:/ti/ccs1240/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --define=ccs="ccs" --define=TARGET_IS_TM4C123_RB1 --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi -z -m"CAN.map" --heap_size=0 --stack_size=512 -i"C:/ti/ccs1240/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/lib" -i"C:/ti/ccs1240/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="CAN_linkInfo.xml" --rom_model -o "CAN.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: "$@"'
 	@echo ' '
 
 CAN.hex: $(EXE_OUTPUTS)
 	@echo 'Building secondary target: "$@"'
 	@echo 'Invoking: Arm Hex Utility'
-	"C:/ti/ccs1230/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/bin/armhex" --diag_wrap=off --array -o "CAN.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccs1240/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/bin/armhex" --diag_wrap=off --array -o "CAN.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building secondary target: "$@"'
 	@echo ' '
 
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" "RX\RX.obj" "TX\TX.obj" "test\test.obj" 
-	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs.d" "RX\RX.d" "TX\TX.d" "test\test.d" 
+	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" "HAL\CANMANAGER\CANMANAGER_program.obj" "RX\RX.obj" "TX\TX.obj" "test\test.obj" 
+	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs.d" "HAL\CANMANAGER\CANMANAGER_program.d" "RX\RX.d" "TX\TX.d" "test\test.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

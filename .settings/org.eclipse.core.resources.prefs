@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
+encoding//Debug/HAL/CANMANAGER/subdir_rules.mk=UTF-8
+encoding//Debug/HAL/CANMANAGER/subdir_vars.mk=UTF-8
 encoding//Debug/RX/subdir_rules.mk=UTF-8
 encoding//Debug/RX/subdir_vars.mk=UTF-8
 encoding//Debug/TX/subdir_rules.mk=UTF-8
