@@ -17,12 +17,18 @@ typedef enum
     SenderStateIdle,
     SenderStateSendStart,
     SenderStateSendData,
+    SenderStateSendCRC,
     SenderStateDone,
 
 } SenderStates;
 
+/*Global variables*/
 static SenderStates geCurruntState = SenderStateIdle;
 static uint32_t gu32MsgCount = 0;
 static bool gbDataFrameSent = false;
+
+/*Function prototypes*/
+static uint32_t calculateCRC(uint32_t *data, uint32_t length);
+
 #endif
 

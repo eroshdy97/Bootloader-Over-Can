@@ -74,7 +74,9 @@ void CANMANAGER_Init(void)
 
     /*Enable Interrupts*/
     CANIntEnable(CAN0_BASE, CAN_INT_MASTER | CAN_INT_ERROR | CAN_INT_STATUS);
+
     IntEnable(INT_CAN0);
+    IntMasterEnable();
 
     /*Enable CAN peripheral*/
     CANEnable(CAN0_BASE);
@@ -93,7 +95,7 @@ bool CANMANAGER_Transmit(uint32_t ui32MsgID, uint8_t ui8MsgLength, uint32_t * pu
     // take care of global and local scope
     gCANMsgTobj.pui8MsgData = (uint8_t *)pui32Data;
 
-    /*set the message and start sending*/
+    /*set the associated callback fn with this object*/
     gpnfs[ui8CANControllerId] = pFn;
 
     CANMessageSet(CAN0_BASE, ui8CANControllerId, &gCANMsgTobj, MSG_OBJ_TYPE_TX);
@@ -106,8 +108,7 @@ bool CANMANAGER_Transmit(uint32_t ui32MsgID, uint8_t ui8MsgLength, uint32_t * pu
     }
     else if (gui32Status==ui8CANControllerId)
     {
-     /* Call the associated function with the message ID sent */
-//     pFn();
+
      gui32Status =0 ;
      return true;
     }

@@ -6,6 +6,7 @@
 #ifndef _BOOTLOADER_INTERFACE_H
 #define _BOOTLOADER_INTERFACE_H
 
+
 void BOOTLOADER_Init(void);
 void BOOTLOADER_Start(void);
 
