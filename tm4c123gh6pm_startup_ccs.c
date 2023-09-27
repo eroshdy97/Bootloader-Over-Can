@@ -1,4 +1,3 @@
-void CANIntHandler(void);
 //*****************************************************************************
 //
 // Startup code for use with TI's Code Composer Studio.
