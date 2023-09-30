@@ -28,6 +28,6 @@ static uint32_t gu32DataReceivedLength = 0;
 static uint32_t gu32DataReceived[5000];
 
 static void WriteAppToFlash(uint32_t* src, uint32_t dst, uint32_t count);
-static void Jmp2App(uint32_t u32Address2jmp);
+static void JumpToApp(uint32_t u32Address2jmp);
 #endif
 
