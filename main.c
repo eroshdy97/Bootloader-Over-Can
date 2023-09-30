@@ -1,5 +1,3 @@
-
-
 #include "APP/Bootloader/BOOTLOADER_interface.h"
 #include "APP/Sender/SENDER_interface.h"
 
@@ -7,13 +5,17 @@
 int main()
 {
 
-
+   /* Initialize the bootloader module */
    BOOTLOADER_Init();
-    BOOTLOADER_Start();
 
+   /* Start the bootloader operation */
+   BOOTLOADER_Start();
 
+//   /* Initialize the Sender module */
 //    SENDER_Init();
-//    SENDER_Start();
+//
+//   /* Start the Sender operation */
+//   SENDER_Start();
 
 
 

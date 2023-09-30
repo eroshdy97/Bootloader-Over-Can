@@ -1,5 +1,5 @@
 
-/*Author:      Mohamed Gamal - Ehab Roushdy                                                                      
+/*Author:      Mohamed Gamal
   Version:     V01                                                                       
   Date:        25/09/2023                                                                             
   Description: LEDS driver configuration file                                 
