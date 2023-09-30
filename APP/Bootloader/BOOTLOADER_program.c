@@ -52,6 +52,31 @@ static void EndCallBack(void)
     geCurruntState = BLStateDone;
 }
 
+static void CRCCallBack(void)
+
+{
+    geCurruntState = BLStateCRC;
+}
+
+static uint32_t calculateCRC(uint32_t *data, uint32_t length) {
+    uint32_t crc = 0xFFFFFFFF;
+    uint32_t i;
+    int j ;
+    for ( i= 0; i < length; i++) {
+        crc ^= data[i];
+        for (j= 0; j < 32; j++) {
+            if (crc & 0x80000000) {
+                crc = (crc << 1) ^ 0xDEADBEAF;
+            } else {
+                crc <<= 1;
+            }
+        }
+    }
+
+    return crc;
+}
+
+
 static void JumpToApp(uint32_t u32Address2jmp)
 {
     switch (u32Address2jmp)
@@ -97,7 +122,7 @@ void BOOTLOADER_Init(void)
 
 void BOOTLOADER_Start(void)
 {
-    LEDS_ON(RED_LED| BLUE_LED| GREEN_LED);
+    LEDS_ON(RED_LED| GREEN_LED);
 
     uint32_t u32CanFrameData;
     uint32_t u32ProgramToRun = PROGRAM_TO_RUN_R;
@@ -106,6 +131,7 @@ void BOOTLOADER_Start(void)
     CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_END  , BOOTLOADER_CAN_MSG_LENGTH_END  , &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_END  , EndCallBack);
     CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_START, BOOTLOADER_CAN_MSG_LENGTH_START, &gu32FlashToBank, BOOTLOADER_CAN_CONTROLLER_ID_START, StartCallBack);
     CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_RESET, BOOTLOADER_CAN_MSG_LENGTH_RESET, &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_RESET, ResetCallBack);
+    CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_CRC  , BOOTLOADER_CAN_MSG_LENGTH_CRC  , &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_CRC  , CRCCallBack);
 
     uint32_t u32TimeOutCounter = BOOTLOADER_TIMEOUT_START_MS * 3180;
     while(geCurruntState == BLStateIdle && (u32TimeOutCounter > 0))
@@ -122,7 +148,7 @@ void BOOTLOADER_Start(void)
     else
     {
         while(geCurruntState != BLStateReceivingData);
-        LEDS_OFF(RED_LED| BLUE_LED| GREEN_LED);
+        LEDS_OFF(RED_LED| GREEN_LED);
         CANMANAGER_ObjReceiveGet(&gu32FlashToBank, BOOTLOADER_CAN_CONTROLLER_ID_START);
         LEDS_ON(BLUE_LED);
 
@@ -137,6 +163,22 @@ void BOOTLOADER_Start(void)
         }
         LEDS_OFF(BLUE_LED);
         LEDS_ON(RED_LED);
+
+        while(geCurruntState == BLStateDone);
+        uint32_t u32receivedCRC;
+        CANMANAGER_ObjReceiveGet(&u32receivedCRC, BOOTLOADER_CAN_CONTROLLER_ID_CRC);
+        uint32_t u32calculatedCRC =  calculateCRC(gu32DataReceived,gu32DataReceivedLength); /*change this when switching to another app*/
+        if(u32calculatedCRC!=u32receivedCRC)
+        {
+            int i;
+            for (i = 0; i < 5; ++i)
+            {
+                LEDS_Blink(RED_LED, 500);
+            }
+            SysCtlReset();
+        }
+
+
         switch (gu32FlashToBank)
         {
             case 1:
