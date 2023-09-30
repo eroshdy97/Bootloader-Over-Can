@@ -30,6 +30,162 @@
 #include "./APP/BOOTLOADER/BOOTLOADER_interface.h"
 
 /**
+ * @brief Write application data to flash memory.
+ *
+ * This function erases flash memory and writes the provided data to the specified address.
+ *
+ * @param[in] pu32Src Pointer to the source data.
+ * @param[in] u32DstAddr Destination address in flash memory.
+ * @param[in] u32Count Size of the data to be written.
+ */
+static void WriteAppToFlash(uint32_t *pu32Src, uint32_t u32DstAddr, uint32_t u32Count)
+{
+    int i = 0;
+    for (i = 0; i < u32Count; i += 1024)
+    {
+        FlashErase(u32DstAddr + i);
+    }
+    FlashProgram(pu32Src, u32DstAddr, u32Count);
+}
+
+/**
+ * @brief Reset callback function.
+ *
+ * This function is called when a reset command is received over the CAN bus.
+ * It resets the microcontroller.
+ */
+static void ResetCallBack(void)
+{
+    SysCtlReset();
+}
+
+/**
+ * @brief Data callback function.
+ *
+ * This function is called when a data frame is received over the CAN bus.
+ * It sets a flag to indicate that a data frame has been received and increments the data received length.
+ */
+static void DataCallBack(void)
+{
+    gbDataFrameReceived = true;
+    ++gu32DataReceivedLength;
+}
+
+/**
+ * @brief Start callback function.
+ *
+ * This function is called when a start command is received over the CAN bus.
+ * It sets the current state to receiving data.
+ */
+static void StartCallBack(void)
+{
+    geCurruntState = BLStateReceivingData;
+}
+
+/**
+ * @brief End callback function.
+ *
+ * This function is called when an end command is received over the CAN bus.
+ * It sets the current state to done.
+ */
+static void EndCallBack(void)
+{
+    geCurruntState = BLStateDone;
+}
+
+/**
+ * @brief CRC callback function.
+ *
+ * This function is called when a CRC frame is received over the CAN bus.
+ * It sets the current state to CRC.
+ */
+static void CRCCallBack(void)
+{
+    geCurruntState = BLStateCRC;
+}
+
+/**
+ * @brief Calculate CRC for received data.
+ *
+ * This function calculates the CRC for the received data to verify its integrity.
+ *
+ * @param[in] data Pointer to the received data.
+ * @param[in] length Length of the data.
+ * @return Calculated CRC value.
+ */
+static uint32_t calculateCRC(uint32_t *data, uint32_t length)
+{
+    uint32_t crc = 0xFFFFFFFF;
+    uint32_t i;
+    int j;
+    for (i = 0; i < length; i++)
+    {
+        crc ^= data[i];
+        for (j = 0; j < 32; j++)
+        {
+            if (crc & 0x80000000)
+            {
+                crc = (crc << 1) ^ 0xDEADBEAF;
+            }
+            else
+            {
+                crc <<= 1;
+            }
+        }
+    }
+    return crc;
+}
+
+/**
+ * @brief Jump to the application code.
+ *
+ * This function jumps to the application code at the specified address.
+ *
+ * @param[in] u32Address2jmp Address to jump to.
+ */
+static void JumpToApp(uint32_t u32Address2jmp)
+{
+    switch (u32Address2jmp)
+    {
+        case BOOTLOADER_ADDRESS_BANK_1:
+        {
+            VTABLE_OFFSET_R |= u32Address2jmp;
+
+            __asm(" mov r0, #0x00005000\n");
+            __asm(" ldr r1, [r0, #4]");
+            __asm(" bx r1\n");
+
+            break;
+        }
+        case BOOTLOADER_ADDRESS_BANK_2:
+        {
+            VTABLE_OFFSET_R |= u32Address2jmp;
+
+            __asm(" mov r0, #0x0001A800\n");
+            __asm(" ldr r1, [r0, #4]");
+            __asm(" bx r1\n");
+
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+/**
+ * @brief Set the application flag to run.
+ *
+ * This function sets the application flag in flash memory to indicate which application to run.
+ *
+ * @param[in] u32Flag Flag value to set.
+ */
+static void SetAppFlagToRun(uint32_t u32Flag)
+{
+    FlashErase(BOOTLOADER_ADDRESS_FLAG);
+    FlashProgram(&u32Flag, BOOTLOADER_ADDRESS_FLAG, sizeof(u32Flag));
+}
+
+/**
  * @brief Initialize the BOOTLOADER module.
  *
  * This function initializes the CAN Manager and LED modules used by the BOOTLOADER module.
