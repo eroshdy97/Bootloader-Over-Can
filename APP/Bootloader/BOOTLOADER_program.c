@@ -113,14 +113,14 @@ static void CRCCallBack(void)
  * @param[in] length Length of the data.
  * @return Calculated CRC value.
  */
-static uint32_t calculateCRC(uint32_t *data, uint32_t length)
+static uint32_t calculateCRC(uint32_t *pu32data, uint32_t u32length)
 {
     uint32_t crc = 0xFFFFFFFF;
     uint32_t i;
     int j;
-    for (i = 0; i < length; i++)
+    for (i = 0; i < u32length; i++)
     {
-        crc ^= data[i];
+        crc ^= pu32data[i];
         for (j = 0; j < 32; j++)
         {
             if (crc & 0x80000000)
@@ -183,6 +183,63 @@ static void SetAppFlagToRun(uint32_t u32Flag)
 {
     FlashErase(BOOTLOADER_ADDRESS_FLAG);
     FlashProgram(&u32Flag, BOOTLOADER_ADDRESS_FLAG, sizeof(u32Flag));
+}
+
+/**
+ * @brief Bank switching handler.
+ *
+ * This function handles the bank switching process for flashing data.
+ *
+ * @param[in] pu32FlashToBank Pointer to the value indicating the bank to flash data to.
+ */
+static void BankSwitchingHandler(uint32_t* pu32FlashToBank)
+{
+    /* Write the received data to the appropriate flash bank and set the flag to run it */
+    switch (*pu32FlashToBank)
+    {
+        case 1:
+        {
+            /* Write the received application data to flash memory for Bank 1 */
+            WriteAppToFlash(gu32DataReceived, BOOTLOADER_ADDRESS_BANK_1, gu32DataReceivedLength * 4);
+
+            /* Reset the data received length counter */
+            gu32DataReceivedLength = 0;
+
+            /* Set the flag to indicate that Bank 1 should be run */
+            SetAppFlagToRun(1);
+
+            /* Turn off the red LED and turn on the green LED to indicate success */
+            LEDS_OFF(RED_LED);
+            LEDS_ON(GREEN_LED);
+
+            /* Jump to the application code in Bank 1 */
+            JumpToApp(BOOTLOADER_ADDRESS_BANK_1);
+            break;
+        }
+        case 2:
+        {
+            /* Write the received application data to flash memory for Bank 2 */
+            WriteAppToFlash(gu32DataReceived, BOOTLOADER_ADDRESS_BANK_2, gu32DataReceivedLength * 4);
+
+            /* Reset the data received length counter */
+            gu32DataReceivedLength = 0;
+
+            /* Set the flag to indicate that Bank 2 should be run */
+            SetAppFlagToRun(2);
+
+            /* Turn off the red LED and turn on the green LED to indicate success */
+            LEDS_OFF(RED_LED);
+            LEDS_ON(GREEN_LED);
+
+            /* Jump to the application code in Bank 2 */
+            JumpToApp(BOOTLOADER_ADDRESS_BANK_2);
+            break;
+        }
+        default:
+            /* Invalid bank selection, do nothing */
+            break;
+    }
+
 }
 
 /**
@@ -272,51 +329,7 @@ void BOOTLOADER_Start(void)
         }
 
         /* Write the received data to the appropriate flash bank and set the flag to run it */
-        switch (gu32FlashToBank)
-        {
-            case 1:
-            {
-                /* Write the received application data to flash memory for Bank 1 */
-                WriteAppToFlash(gu32DataReceived, BOOTLOADER_ADDRESS_BANK_1, gu32DataReceivedLength * 4);
-
-                /* Reset the data received length counter */
-                gu32DataReceivedLength = 0;
-
-                /* Set the flag to indicate that Bank 1 should be run */
-                SetAppFlagToRun(1);
-
-                /* Turn off the red LED and turn on the green LED to indicate success */
-                LEDS_OFF(RED_LED);
-                LEDS_ON(GREEN_LED);
-
-                /* Jump to the application code in Bank 1 */
-                JumpToApp(BOOTLOADER_ADDRESS_BANK_1);
-                break;
-            }
-            case 2:
-            {
-                /* Write the received application data to flash memory for Bank 2 */
-                WriteAppToFlash(gu32DataReceived, BOOTLOADER_ADDRESS_BANK_2, gu32DataReceivedLength * 4);
-
-                /* Reset the data received length counter */
-                gu32DataReceivedLength = 0;
-
-                /* Set the flag to indicate that Bank 2 should be run */
-                SetAppFlagToRun(2);
-
-                /* Turn off the red LED and turn on the green LED to indicate success */
-                LEDS_OFF(RED_LED);
-                LEDS_ON(GREEN_LED);
-
-                /* Jump to the application code in Bank 2 */
-                JumpToApp(BOOTLOADER_ADDRESS_BANK_2);
-                break;
-            }
-            default:
-                /* Invalid bank selection, do nothing */
-                break;
-        }
-
+        BankSwitchingHandler(&gu32FlashToBank);
     }
     while (1);
 }

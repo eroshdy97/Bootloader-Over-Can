@@ -19,6 +19,7 @@
 
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/gpio.h"
 
 #include "HAL/CANMANAGER/CANMANAGER_interface.h"
 #include "HAL/LEDS/LEDS_interface.h"
@@ -87,14 +88,14 @@ static void CRCCallBack(void)
  * @param[in] length Length of the data in words (32-bit).
  * @return Calculated CRC value.
  */
-static uint32_t calculateCRC(uint32_t *data, uint32_t length)
+static uint32_t calculateCRC(const uint32_t *pu32data, uint32_t u32length)
 {
     uint32_t crc = 0xFFFFFFFF;
     uint32_t i;
     int j;
-    for (i = 0; i < length; i++)
+    for (i = 0; i < u32length; i++)
     {
-        crc ^= data[i];
+        crc ^= pu32data[i];
         for (j = 0; j < 32; j++)
         {
             if (crc & 0x80000000)
@@ -112,22 +113,16 @@ static uint32_t calculateCRC(uint32_t *data, uint32_t length)
 }
 
 /**
- * @brief Initialize the SENDER module.
+ * @brief Send application data to the BOOTLOADER for firmware update.
  *
- * This function initializes the CANMANAGER and LEDS modules.
- */
-void SENDER_Init(void)
-{
-    CANMANAGER_Init();
-    LEDS_Init();
-}
-
-/**
- * @brief Start the SENDER module.
+ * This function sends application data to the BOOTLOADER for a firmware update over the CAN bus.
+ * It follows a sequence of commands including reset, start, data transmission, end, and CRC calculation.
  *
- * This function initiates the SENDER module's operation.
+ * @param[in] pu32HexArray Pointer to the source data array in hexadecimal format.
+ * @param[in] u32AppSize Size of the application data in words (32-bit).
+ * @param[in] u8bankToFlash Identifier for the target application bank (e.g., BANK_1 or BANK_2).
  */
-void SENDER_Start(void)
+static void SendApp(const uint32_t *pu32HexArray, uint32_t u32AppSize, uint8_t u8bankToFlash)
 {
     /* Turn on the RED and BLUE LEDs to indicate the start of the SENDER module. */
     LEDS_ON(RED_LED | BLUE_LED);
@@ -148,7 +143,7 @@ void SENDER_Start(void)
     SysCtlDelay(1000 * 16000 / 3);
 
     /* Set the application identifier (e.g., BANK_1) to specify which firmware to update. */
-    u32MsgData = SENDER_FLASH_TO_BANK_1; /* Change this to select the appropriate application */
+    u32MsgData = u8bankToFlash; /* Change this to select the appropriate application */
 
     /* Send the start command to the BOOTLOADER with the selected application identifier. */
     CANMANAGER_Transmit(SENDER_CAN_MSG_ID_START, SENDER_CAN_MSG_LENGTH_START, &u32MsgData, SENDER_CAN_CONTROLLER_ID_START, StartCallBack);
@@ -161,10 +156,10 @@ void SENDER_Start(void)
     LEDS_ON(BLUE_LED);
 
     /* Transmit data frames until all data is sent. */
-    while (gu32MsgCount < size_app_1) /* Change this to the appropriate data size */
+    while (gu32MsgCount < u32AppSize) /* Change this to the appropriate data size */
     {
-        /* Prepare data from the source (e.g., CANProjectToFlash1_image_0) for transmission. */
-        u32MsgData = CANProjectToFlash1_image_0[gu32MsgCount]; /* Change this to read data from the appropriate source */
+        /* Prepare data from the source (e.g., pu32HexArray) for transmission. */
+        u32MsgData = pu32HexArray[gu32MsgCount]; /* Change this to read data from the appropriate source */
 
         /* Send a data frame over the CAN bus. */
         CANMANAGER_Transmit(SENDER_CAN_MSG_ID_DATA, SENDER_CAN_MSG_LENGTH_DATA, &u32MsgData, SENDER_CAN_CONTROLLER_ID_DATA, DataCallBack);
@@ -188,7 +183,7 @@ void SENDER_Start(void)
     LEDS_ON(GREEN_LED);
 
     /* Calculate CRC for the transmitted data and send it over the CAN bus for validation. */
-    u32MsgData = calculateCRC(CANProjectToFlash1_image_0, size_app_1); /* Change this when switching to another app */
+    u32MsgData = calculateCRC(pu32HexArray, u32AppSize); /* Change this when switching to another app */
     CANMANAGER_Transmit(SENDER_CAN_MSG_ID_CRC, SENDER_CAN_MSG_LENGTH_CRC, &u32MsgData, SENDER_CAN_CONTROLLER_ID_CRC, CRCCallBack);
 
     /* Wait for acknowledgment that the CRC calculation and validation have been sent. */
@@ -197,6 +192,45 @@ void SENDER_Start(void)
     /* Turn off the GREEN LED and turn on all LEDs to indicate the end of the update process. */
     LEDS_OFF(GREEN_LED);
     LEDS_ON(GREEN_LED | RED_LED | BLUE_LED);
+}
 
-    while (1);
+/**
+ * @brief Initialize the SENDER module.
+ *
+ * This function initializes the CANMANAGER and LEDS modules.
+ */
+void SENDER_Init(void)
+{
+    CANMANAGER_Init();
+    LEDS_Init();
+
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+
+    GPIOUnlockPin(GPIO_PORTF_BASE, GPIO_PIN_0);
+    GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
+    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_4, GPIO_STRENGTH_12MA, GPIO_PIN_TYPE_STD_WPU);
+}
+
+/**
+ * @brief Start the SENDER module.
+ *
+ * This function initiates the SENDER module's operation.
+ */
+void SENDER_Start(void)
+{
+    while (1)
+    {
+        if(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0))
+        {
+            while(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0));
+            SendApp(CANProjectToFlash1_image_0, size_app_1, SENDER_FLASH_TO_BANK_1);
+        }
+        else if(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4))
+        {
+            while(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4));
+            SendApp(CANProjectToFlash2_image_0, size_app_2, SENDER_FLASH_TO_BANK_2);
+
+        }
+
+    }
 }

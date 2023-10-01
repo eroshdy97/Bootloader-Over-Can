@@ -91,7 +91,7 @@ static void CRCCallBack(void);
  * @param[in] length Length of the data in words (32-bit).
  * @return Calculated CRC value.
  */
-static uint32_t calculateCRC(uint32_t *data, uint32_t length);
+static uint32_t calculateCRC(uint32_t *pu32data, uint32_t u32length);
 
 /**
  * @brief Jump to the application code.
@@ -110,5 +110,14 @@ static void JumpToApp(uint32_t u32Address2jmp);
  * @param[in] u32Flag Flag value to set.
  */
 static void SetAppFlagToRun(uint32_t u32Flag);
+
+/**
+ * @brief Bank switching handler.
+ *
+ * This function handles the bank switching process for flashing data.
+ *
+ * @param[in] pu32FlashToBank Pointer to the value indicating the bank to flash data to.
+ */
+static void BankSwitchingHandler(uint32_t* pu32FlashToBank);
 
 #endif

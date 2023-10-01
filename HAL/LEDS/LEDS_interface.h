@@ -57,4 +57,14 @@ void LEDS_ON(uint8_t ui8LEDPin);
  */
 void LEDS_OFF(uint8_t ui8LEDPin);
 
+/**
+ * @brief Blink a LED.
+ *
+ * This function turns off and on the specified LED.
+ *
+ * @param[in] ui8LEDPin GPIO pin corresponding to the LED.
+ * @param[in] ui32DelayMs Delay between blinks.
+ */
+void LEDS_Blink(uint8_t ui8LEDPin, uint32_t ui32DelayMs);
+
 #endif /* _LEDS_INTERFACE_H */
