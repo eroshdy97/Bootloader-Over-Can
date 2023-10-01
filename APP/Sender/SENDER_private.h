@@ -75,6 +75,18 @@ static bool gbDataFrameSent = false;
  * @param[in] length Length of the data in words (32-bit).
  * @return Calculated CRC value.
  */
-static uint32_t calculateCRC(uint32_t *data, uint32_t length);
+static uint32_t calculateCRC(const uint32_t *pu32data, uint32_t u32length);
+
+/**
+ * @brief Send application data to the BOOTLOADER for firmware update.
+ *
+ * This function sends application data to the BOOTLOADER for a firmware update over the CAN bus.
+ * It follows a sequence of commands including reset, start, data transmission, end, and CRC calculation.
+ *
+ * @param[in] pu32HexArray Pointer to the source data array in hexadecimal format.
+ * @param[in] u32AppSize Size of the application data in words (32-bit).
+ * @param[in] u8bankToFlash Identifier for the target application bank (e.g., BANK_1 or BANK_2).
+ */
+static void SendApp(const uint32_t *pu32HexArray, uint32_t u32AppSize, uint8_t u8bankToFlash);
 
 #endif
