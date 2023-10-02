@@ -4,15 +4,15 @@
 
 int main()
 {
-
-   /* Initialize the bootloader module */
+//
+//   /* Initialize the bootloader module */
    BOOTLOADER_Init();
 
    /* Start the bootloader operation */
    BOOTLOADER_Start();
 
 //   /* Initialize the Sender module */
-//    SENDER_Init();
+//   SENDER_Init();
 //
 //   /* Start the Sender operation */
 //   SENDER_Start();
