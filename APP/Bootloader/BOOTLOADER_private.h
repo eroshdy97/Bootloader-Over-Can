@@ -32,7 +32,7 @@ static BLStates geCurruntState = BLStateIdle;              /**< Current state of
 static bool gbDataFrameReceived = false;                   /**< Flag to indicate if a data frame has been received. */
 static uint32_t gu32FlashToBank = 0;                       /**< Value indicating which bank to flash data to.       */
 static uint32_t gu32DataReceivedLength = 0;                /**< Length of data received.                            */
-static uint32_t gu32DataReceived[5000];                    /**< Buffer to store received data.                      */
+static uint32_t gu32DataReceived[6000];                    /**< Buffer to store received data.                      */
 
 /* Static function prototypes */
 

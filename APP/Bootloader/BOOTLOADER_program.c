@@ -145,6 +145,8 @@ static uint32_t calculateCRC(uint32_t *pu32data, uint32_t u32length)
  */
 static void JumpToApp(uint32_t u32Address2jmp)
 {
+    LEDS_OFF(RED_LED | GREEN_LED | BLUE_LED);
+    SysCtlPeripheralDisable(SYSCTL_PERIPH_GPIOF);
     switch (u32Address2jmp)
     {
         case BOOTLOADER_ADDRESS_BANK_1:
@@ -239,7 +241,6 @@ static void BankSwitchingHandler(uint32_t* pu32FlashToBank)
             /* Invalid bank selection, do nothing */
             break;
     }
-
 }
 
 /**
@@ -269,10 +270,10 @@ void BOOTLOADER_Start(void)
     uint32_t u32ProgramToRun = PROGRAM_TO_RUN_R;
 
     /* Set up CAN message receive callbacks */
+    CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_RESET, BOOTLOADER_CAN_MSG_LENGTH_RESET, &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_RESET, ResetCallBack);
+    CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_START, BOOTLOADER_CAN_MSG_LENGTH_START, &gu32FlashToBank, BOOTLOADER_CAN_CONTROLLER_ID_START, StartCallBack);
     CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_DATA , BOOTLOADER_CAN_MSG_LENGTH_DATA , &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_DATA , DataCallBack );
     CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_END  , BOOTLOADER_CAN_MSG_LENGTH_END  , &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_END  , EndCallBack  );
-    CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_START, BOOTLOADER_CAN_MSG_LENGTH_START, &gu32FlashToBank, BOOTLOADER_CAN_CONTROLLER_ID_START, StartCallBack);
-    CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_RESET, BOOTLOADER_CAN_MSG_LENGTH_RESET, &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_RESET, ResetCallBack);
     CANMANAGER_ObjReceiveSet(BOOTLOADER_CAN_MSG_ID_CRC  , BOOTLOADER_CAN_MSG_LENGTH_CRC  , &u32CanFrameData, BOOTLOADER_CAN_CONTROLLER_ID_CRC  , CRCCallBack  );
 
     /* Wait for a timeout to start receiving data */
@@ -319,7 +320,7 @@ void BOOTLOADER_Start(void)
         uint32_t u32calculatedCRC = calculateCRC(gu32DataReceived, gu32DataReceivedLength);
         if (u32calculatedCRC != u32receivedCRC)
         {
-            /* CRC check failed, blink the red LED and reset */
+            /* CRC check failed, blink the red LED 5 times and reset to run the previous application if there is any*/
             int i;
             for (i = 0; i < 5; ++i)
             {

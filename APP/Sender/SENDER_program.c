@@ -84,8 +84,8 @@ static void CRCCallBack(void)
  *
  * This function calculates the CRC for a block of data.
  *
- * @param[in] data Pointer to the data.
- * @param[in] length Length of the data in words (32-bit).
+ * @param[in] pu32data Pointer to the data.
+ * @param[in] u32length Length of the data in words (32-bit).
  * @return Calculated CRC value.
  */
 static uint32_t calculateCRC(const uint32_t *pu32data, uint32_t u32length)
@@ -127,7 +127,7 @@ static void SendApp(const uint32_t *pu32HexArray, uint32_t u32AppSize, uint8_t u
     /* Turn on the RED and BLUE LEDs to indicate the start of the SENDER module. */
     LEDS_ON(RED_LED | BLUE_LED);
 
-    uint32_t u32MsgData;
+    uint32_t u32MsgData = 0;
 
     /* Send the reset command to the BOOTLOADER to initiate the firmware update process. */
     CANMANAGER_Transmit(SENDER_CAN_MSG_ID_RESET, SENDER_CAN_MSG_LENGTH_RESET, &u32MsgData, SENDER_CAN_CONTROLLER_ID_RESET, ResetCallBack);
@@ -140,7 +140,7 @@ static void SendApp(const uint32_t *pu32HexArray, uint32_t u32AppSize, uint8_t u
     LEDS_ON(GREEN_LED);
 
     /* Delay to ensure a smooth transition before starting the firmware update. */
-    SysCtlDelay(1000 * 16000 / 3);
+    SysCtlDelay(10 * 16000 / 3); // Delay for 10 ms (adjust as needed)
 
     /* Set the application identifier (e.g., BANK_1) to specify which firmware to update. */
     u32MsgData = u8bankToFlash; /* Change this to select the appropriate application */
@@ -167,6 +167,7 @@ static void SendApp(const uint32_t *pu32HexArray, uint32_t u32AppSize, uint8_t u
         /* Wait for acknowledgment that the data frame has been sent. */
         gbDataFrameSent = false;
     }
+    gu32MsgCount = 0;
 
     /* Turn off the BLUE LED and turn on the RED LED to indicate the end of data transmission. */
     LEDS_OFF(BLUE_LED);
@@ -208,7 +209,7 @@ void SENDER_Init(void)
 
     GPIOUnlockPin(GPIO_PORTF_BASE, GPIO_PIN_0);
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
-    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_4, GPIO_STRENGTH_12MA, GPIO_PIN_TYPE_STD_WPU);
+    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4, GPIO_STRENGTH_12MA, GPIO_PIN_TYPE_STD_WPU);
 }
 
 /**
@@ -218,19 +219,25 @@ void SENDER_Init(void)
  */
 void SENDER_Start(void)
 {
+    LEDS_ON(GREEN_LED | RED_LED | BLUE_LED);
+
+    // Determine the size of the application data arrays
+    unsigned int size_app_1 = sizeof(CANProjectToFlash1_image_0) / sizeof(CANProjectToFlash1_image_0[0]);
+    unsigned int size_app_2 = sizeof(CANProjectToFlash2_image_0) / sizeof(CANProjectToFlash2_image_0[0]);
+
     while (1)
     {
-        if(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0))
+        if (!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0))
         {
-            while(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0));
+            while (!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0));
+            // Send application data for BANK_1
             SendApp(CANProjectToFlash1_image_0, size_app_1, SENDER_FLASH_TO_BANK_1);
         }
-        else if(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4))
+        else if (!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4))
         {
-            while(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4));
+            while (!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4));
+            // Send application data for BANK_2
             SendApp(CANProjectToFlash2_image_0, size_app_2, SENDER_FLASH_TO_BANK_2);
-
         }
-
     }
 }

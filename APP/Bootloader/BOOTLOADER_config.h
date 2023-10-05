@@ -28,10 +28,10 @@
 #define BOOTLOADER_CAN_MSG_LENGTH_CRC           4 /**< Length of CRC command messages in bytes. */
 
 /* CAN controller IDs */
-#define BOOTLOADER_CAN_CONTROLLER_ID_DATA       1 /**< CAN controller ID for data frames. */
-#define BOOTLOADER_CAN_CONTROLLER_ID_END        2 /**< CAN controller ID for end command. */
-#define BOOTLOADER_CAN_CONTROLLER_ID_START      3 /**< CAN controller ID for start command. */
-#define BOOTLOADER_CAN_CONTROLLER_ID_RESET      4 /**< CAN controller ID for reset command. */
+#define BOOTLOADER_CAN_CONTROLLER_ID_RESET      1 /**< CAN controller ID for reset command. */
+#define BOOTLOADER_CAN_CONTROLLER_ID_START      2 /**< CAN controller ID for start command. */
+#define BOOTLOADER_CAN_CONTROLLER_ID_DATA       3 /**< CAN controller ID for data frames. */
+#define BOOTLOADER_CAN_CONTROLLER_ID_END        4 /**< CAN controller ID for end command. */
 #define BOOTLOADER_CAN_CONTROLLER_ID_CRC        5 /**< CAN controller ID for CRC validation. */
 
 /* CAN addresses to flash */
@@ -40,6 +40,6 @@
 #define BOOTLOADER_ADDRESS_BANK_2               0x0001A800 /**< Flash memory address for the second application bank (150 KB). */
 
 /* Maximum time (in milliseconds) to wait for receiving the START command */
-#define BOOTLOADER_TIMEOUT_START_MS             1 /**< Timeout duration for receiving the START message. */
+#define BOOTLOADER_TIMEOUT_START_MS             10 /**< Timeout duration for receiving the START message. */
 
 #endif

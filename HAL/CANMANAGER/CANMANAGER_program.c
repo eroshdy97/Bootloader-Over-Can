@@ -40,8 +40,8 @@
  */
 void CANMANAGER_Delay_us(uint32_t us)
 {
-    /* 110-200 us are enough */
-    SysCtlDelay(us * 16 / 3);
+    /* Delay using SysCtlDelay. */
+    SysCtlDelay(us * 16 / 3); // 1 us delay requires approximately (16 / 3) cycles
 }
 
 /**
@@ -62,11 +62,11 @@ void CANMANAGER_IntHandler(void)
         g_bErrFlag = true;
     }
     /* Useful Message ID received */
-    else
+    else if (gui32Status > 0 && gui32Status < 33)
     {
         CANIntClear(CAN0_BASE, gui32Status);
         /* Call the associated function with the message ID sent */
-        gpnfs[gui32Status]();
+        gpnfs[gui32Status - 1]();
         g_bErrFlag = false;
     }
 }
@@ -78,24 +78,24 @@ void CANMANAGER_IntHandler(void)
  */
 void CANMANAGER_Init(void)
 {
-    /* GPIO Inits and Configs for CAN */
-    /* Clock gating port B for CAN0 */
+    /* GPIO Initialization and Configuration for CAN */
+    /* Enable the clock for Port B (GPIOB) */
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-    /* Configure the needed CAN pins */
+    /* Configure the GPIO pins for CAN0 operation */
     GPIOPinConfigure(GPIO_PB4_CAN0RX);
     GPIOPinConfigure(GPIO_PB5_CAN0TX);
     GPIOPinTypeCAN(GPIO_PORTB_BASE, GPIO_PIN_4 | GPIO_PIN_5);
 
-    /* CAN Inits and Configs */
+    /* CAN Initialization and Configuration */
 
-    /* Clock gating for CAN0 */
+    /* Enable the clock for CAN0 */
     SysCtlPeripheralEnable(SYSCTL_PERIPH_CAN0);
 
-    /* Init CAN0 */
+    /* Initialize CAN0 */
     CANInit(CAN0_BASE);
 
-    /* Set CAN Rate */
-    CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 1000000);
+    /* Set CAN Bit Rate */
+    CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 1000000); // Example: 1 Mbps
 
     /* Enable Interrupts */
     CANIntEnable(CAN0_BASE, CAN_INT_MASTER | CAN_INT_ERROR | CAN_INT_STATUS);
@@ -121,27 +121,31 @@ void CANMANAGER_Init(void)
  */
 bool CANMANAGER_Transmit(uint32_t ui32MsgID, uint8_t ui8MsgLength, uint32_t *pui32Data, uint8_t ui8CANControllerId, void (*pFn)(void))
 {
-    /* Fill the needed parameters for the CAN object */
+    /* Fill the CAN message object parameters */
     gCANMsgTobj.ui32MsgID = ui32MsgID;
     gCANMsgTobj.ui32MsgIDMask = 0;
-    gCANMsgTobj.ui32Flags = MSG_OBJ_TX_INT_ENABLE;
+    gCANMsgTobj.ui32Flags = MSG_OBJ_TX_INT_ENABLE | MSG_OBJ_EXTENDED_ID;
     gCANMsgTobj.ui32MsgLen = ui8MsgLength;
     gCANMsgTobj.pui8MsgData = (uint8_t *)pui32Data;
 
     /* Set the associated callback function with this object */
-    gpnfs[ui8CANControllerId] = pFn;
+    gpnfs[ui8CANControllerId - 1] = pFn;
 
+    /* Send the CAN message */
     CANMessageSet(CAN0_BASE, ui8CANControllerId, &gCANMsgTobj, MSG_OBJ_TYPE_TX);
+
+    /* Delay for a short time to allow message transmission. */
     CANMANAGER_Delay_us(200);
 
     if (g_bErrFlag)
     {
-        /* Reset error flag for next time */
+        /* Reset error flag for the next time */
         g_bErrFlag = false;
         return false;
     }
     else if (gui32Status == ui8CANControllerId)
     {
+        /* Reset status and return true for successful transmission. */
         gui32Status = 0;
         return true;
     }
@@ -164,7 +168,7 @@ bool CANMANAGER_Transmit(uint32_t ui32MsgID, uint8_t ui8MsgLength, uint32_t *pui
  */
 void CANMANAGER_ObjReceiveSet(uint32_t u32MsgID, uint8_t u8MsgLength, uint32_t *pu32Data, uint8_t u8CANControllerId, void (*pFn)(void))
 {
-    /* Fill the needed parameters for the CAN object */
+    /* Fill the CAN message object parameters */
     gCANMsgRobj.ui32MsgID = u32MsgID;
     gCANMsgRobj.ui32MsgIDMask = 0xfffff;
     gCANMsgRobj.ui32Flags = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_EXTENDED_ID;
@@ -173,8 +177,9 @@ void CANMANAGER_ObjReceiveSet(uint32_t u32MsgID, uint8_t u8MsgLength, uint32_t *
 
     /* Set the message to the specified object */
     CANMessageSet(CAN0_BASE, u8CANControllerId, &gCANMsgRobj, MSG_OBJ_TYPE_RX);
-    /* Set callback */
-    gpnfs[u8CANControllerId] = pFn;
+
+    /* Set callback function */
+    gpnfs[u8CANControllerId - 1] = pFn;
 }
 
 /**
@@ -190,15 +195,17 @@ bool CANMANAGER_ObjReceiveGet(uint32_t *pu32Data, uint8_t u8CANControllerId)
 {
     /* Receive the data at the desired variable */
     gCANMsgRobj.pui8MsgData = (uint8_t *)pu32Data;
-    /* Receive the message at the object set */
+
+    /* Receive the message at the specified object */
     if (g_bErrFlag)
     {
-        /* Reset error flag for next time */
+        /* Reset error flag for the next time */
         g_bErrFlag = false;
         return false;
     }
     else if (gui32Status == u8CANControllerId)
     {
+        /* Retrieve the CAN message */
         CANMessageGet(CAN0_BASE, u8CANControllerId, &gCANMsgRobj, 0);
         gui32Status = 0;
         return true;

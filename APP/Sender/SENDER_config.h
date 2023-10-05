@@ -27,10 +27,10 @@
 #define SENDER_CAN_MSG_LENGTH_CRC           4 /**< Length of CRC command messages in bytes. */
 
 /* CAN controller IDs */
-#define SENDER_CAN_CONTROLLER_ID_DATA       1 /**< CAN controller ID for data frames. */
-#define SENDER_CAN_CONTROLLER_ID_END        2 /**< CAN controller ID for end command. */
-#define SENDER_CAN_CONTROLLER_ID_START      3 /**< CAN controller ID for start command. */
-#define SENDER_CAN_CONTROLLER_ID_RESET      4 /**< CAN controller ID for reset command. */
+#define SENDER_CAN_CONTROLLER_ID_RESET      1 /**< CAN controller ID for reset command. */
+#define SENDER_CAN_CONTROLLER_ID_START      2 /**< CAN controller ID for start command. */
+#define SENDER_CAN_CONTROLLER_ID_DATA       3 /**< CAN controller ID for data frames. */
+#define SENDER_CAN_CONTROLLER_ID_END        4 /**< CAN controller ID for end command. */
 #define SENDER_CAN_CONTROLLER_ID_CRC        5 /**< CAN controller ID for CRC validation. */
 
 #endif
