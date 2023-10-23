@@ -1,4 +1,3 @@
-void CANIntHandler(void);
 //*****************************************************************************
 //
 // Startup code for use with TI's Code Composer Studio.
@@ -56,7 +55,7 @@ extern uint32_t __STACK_TOP;
 //
 //*****************************************************************************
 // To be added by user
-
+extern void CANMANAGER_IntHandler(void);
 //*****************************************************************************
 //
 // The vector table.  Note that the proper constructs must be placed on this to
@@ -123,7 +122,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // Timer 3 subtimer B
     IntDefaultHandler,                      // I2C1 Master and Slave
     IntDefaultHandler,                      // Quadrature Encoder 1
-    CANIntHandler,                      // CAN0
+    CANMANAGER_IntHandler,                      // CAN0
     IntDefaultHandler,                      // CAN1
     0,                                      // Reserved
     0,                                      // Reserved

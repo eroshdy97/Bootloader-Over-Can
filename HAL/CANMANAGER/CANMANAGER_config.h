@@ -1,15 +1,12 @@
-/*
- * Author:      Ehab Roshdy                                                                      
- * Version:     0.1                                                                       
- * Date:        25/9/2023                                                                             
- * Description: CANMANAGER driver configuration file                                 
+
+/*Author:      Mohamed Gamal                                                                      
+  Version:     V01                                                                       
+  Date:        25/09/2023                                                                             
+  Description: CANMANGER driver configuration file                                 
 */
 
-#pragma once
+#ifndef _CANMANGER_CONFIG_H
+#define _CANMANGER_CONFIG_H
 
-////////////////////////////           MACROS           //////////////////////////////////////
-
-////////////////////////////          VARIABLES         //////////////////////////////////////
-
-////////////////////////////          FUNCTIONS         //////////////////////////////////////
+#endif
 
