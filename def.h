@@ -1,2 +1,0 @@
-#define isTX        0
-
